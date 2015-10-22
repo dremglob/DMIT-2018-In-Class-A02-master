@@ -1,4 +1,4 @@
-<Query Kind="Expression">
+<Query Kind="Statements">
   <Connection>
     <ID>51e315b6-571d-45d5-925c-12e128eab5ed</ID>
     <Persist>true</Persist>
@@ -8,13 +8,13 @@
   </Connection>
 </Query>
 
-from eachRow in Reservations
+var step1 = from eachRow in Reservations
 where eachRow.ReservationStatus == 'B' // Use "B" in Visual Studio
 	// TBA - && eachRow has the correct EventCode...
 orderby eachRow.ReservationDate
-//select eachRow
-group eachRow by new { eachRow.ReservationDate.Month, eachRow.ReservationDate.Day }
-into dailyReservation
+group eachRow by new { eachRow.ReservationDate.Month, eachRow.ReservationDate.Day };
+
+var result = from dailyReservation in step1.ToList()
 select new // DailyReservation() // Create a DTO class called DailyReservation
 {
 	Month = dailyReservation.Key.Month,
@@ -26,6 +26,9 @@ select new // DailyReservation() // Create a DTO class called DailyReservation
 						Time = booking.ReservationDate.TimeOfDay,
 						NumberInParty = booking.NumberInParty,
 						Phone = booking.ContactPhone,
-						Event = booking.SpecialEvents.Description
+						Event = booking.SpecialEvents == null
+								? (string)null
+								: booking.SpecialEvents.Description
 					}
-}
+};
+result.Dump();
